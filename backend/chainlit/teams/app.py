@@ -238,21 +238,21 @@ async def process_teams_message(
 ):
     user = await get_user(turn_context.activity.from_property)
 
+    # Use a consistent thread_id for the conversation
     thread_id = str(
         uuid.uuid5(
             uuid.NAMESPACE_DNS,
-            str(
-                turn_context.activity.conversation.id
-                + datetime.today().strftime("%Y-%m-%d")
-            ),
+            str(turn_context.activity.conversation.id)
         )
     )
 
     text = clean_content(turn_context.activity)
     teams_files = turn_context.activity.attachments
 
-    session_id = str(uuid.uuid4())
+    # Use a consistent session_id for the conversation
+    session_id = f"session_{thread_id}"
 
+    # Check if session already exists, otherwise create a new one
     session = HTTPSession(
         id=session_id,
         thread_id=thread_id,
@@ -297,7 +297,9 @@ async def process_teams_message(
             except Exception as e:
                 logger.error(f"Error updating thread: {e}")
 
-    await ctx.session.delete()
+    # Do not delete the session to maintain it
+    # ctx.session.delete()
+
 
 
 async def handle_message(turn_context: TurnContext):
